@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Amor</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa; /* Fondo azul claro */
+            color: #37474f; /* Color de texto oscuro */
+            text-align: center; /* Centrar el texto */
+            padding: 20px; /* Espaciado */
+        }
+        h1 {
+            color: #00796b; /* Color del título */
+            font-size: 2.5em; /* Tamaño del título */
+            margin-bottom: 20px; /* Espacio debajo del título */
+        }
+        input[type="text"] {
+            padding: 12px;
+            margin: 10px 5px;
+            border: 2px solid #00796b; /* Borde verde oscuro */
+            border-radius: 20px; /* Bordes redondeados */
+            width: 90%; /* Ancho del input en porcentaje */
+            max-width: 350px; /* Ancho máximo del input */
+            font-size: 1em; /* Tamaño del texto */
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #009688; /* Fondo verde */
+            color: white; /* Texto blanco */
+            border: none;
+            border-radius: 20px; /* Bordes redondeados */
+            cursor: pointer; /* Cursor de mano */
+            font-size: 1em; /* Tamaño del texto */
+            transition: background-color 0.3s; /* Transición suave */
+        }
+        button:hover {
+            background-color: #00796b; /* Color más oscuro al pasar el ratón */
+        }
+        .lista {
+            margin: 20px auto;
+            padding: 0;
+            max-width: 90%; /* Ancho máximo de la lista */
+            list-style: none; /* Eliminar puntos de la lista */
+        }
+        .lista div {
+            background: #ffffff; /* Fondo blanco */
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px; /* Bordes redondeados */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra suave */
+            position: relative; /* Posición relativa para el botón */
+        }
+        .lista button {
+            position: absolute; /* Posicionamiento absoluto para el botón de eliminar */
+            right: 10px;
+            top: 10px;
+            background-color: #f44336; /* Fondo rojo para el botón de eliminar */
+            padding: 5px 10px; /* Espaciado del botón de eliminar */
+            border-radius: 5px; /* Bordes redondeados del botón de eliminar */
+            font-size: 0.8em; /* Tamaño del texto */
+            transition: background-color 0.3s; /* Transición suave */
+        }
+        .lista button:hover {
+            background-color: #d32f2f; /* Color más oscuro al pasar el ratón */
+        }
+        /* Media Queries para móviles */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em; /* Tamaño de título más pequeño en móviles */
+            }
+            input[type="text"], button {
+                font-size: 0.9em; /* Tamaño de texto más pequeño en móviles */
+                padding: 10px; /* Ajustar espaciado en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Amor</h1>
+    <input type="text" id="contenido" placeholder="Añadir algo bonito..." />
+    <input type="text" id="creador" placeholder="Tu nombre" />
+    <button id="addBtn">Añadir</button>
+
+    <div class="lista" id="lista"></div>
+
+    <script>
+        const listaDiv = document.getElementById('lista');
+
+        function actualizarLista() {
+            fetch('/api/lista')
+                .then(response => response.json())
+                .then(data => {
+                    listaDiv.innerHTML = '';
+                    data.forEach(item => {
+                        listaDiv.innerHTML += `
+                            <div>
+                                ${item.contenido} - <strong>${item.creador}</strong>
+                                <button onclick="eliminar(${item.id})">Eliminar</button>
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const contenido = document.getElementById('contenido').value;
+            const creador = document.getElementById('creador').value;
+            fetch('/api/lista', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contenido, creador })
+            })
+            .then(() => {
+                document.getElementById('contenido').value = '';
+                document.getElementById('creador').value = '';
+                actualizarLista();
+            });
+        });
+
+        function eliminar(id) {
+            fetch(`/api/lista/${id}`, { method: 'DELETE' })
+                .then(() => actualizarLista());
+        }
+
+        // Cargar la lista al inicio
+        actualizarLista();
+    </script>
+</body>
+</html>
